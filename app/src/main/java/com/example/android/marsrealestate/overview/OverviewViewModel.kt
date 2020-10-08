@@ -22,10 +22,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.android.marsrealestate.network.MarsApi
+import com.example.android.marsrealestate.network.MarsApiFilter
 import com.example.android.marsrealestate.network.MarsApiStatus
 import com.example.android.marsrealestate.network.MarsProperty
 import kotlinx.coroutines.launch
-import java.lang.Exception
 
 class OverviewViewModel : ViewModel() {
 
@@ -49,7 +49,7 @@ class OverviewViewModel : ViewModel() {
         get() = _status
 
     init {
-        getMarsRealEstatePropertiesWithCoroutines()
+        getMarsRealEstatePropertiesWithCoroutines(MarsApiFilter.SHOW_ALL)
     }
 
 //    private fun getMarsRealEstateProperties() {
@@ -63,11 +63,11 @@ class OverviewViewModel : ViewModel() {
 //        })
 //    }
 
-    private fun getMarsRealEstatePropertiesWithCoroutines() {
+    private fun getMarsRealEstatePropertiesWithCoroutines(filter: MarsApiFilter) {
         viewModelScope.launch {
             _status.value = MarsApiStatus.LOADING
             try {
-                val data = MarsApi.retrofitService.getProperties()
+                val data = MarsApi.retrofitService.getProperties(filter.value)
                 _properties.value = data
                 _response.value = "Connection Successful"
                 _status.value = MarsApiStatus.DONE
@@ -75,8 +75,12 @@ class OverviewViewModel : ViewModel() {
                 _status.value = MarsApiStatus.ERROR
                 _response.value = "Connection Error -> ${e.message}"
                 //Cleaning the live data
-                    _properties.value = arrayListOf()
+                _properties.value = arrayListOf()
             }
         }
+    }
+
+    fun updateFilter(filter: MarsApiFilter) {
+        getMarsRealEstatePropertiesWithCoroutines(filter)
     }
 }
